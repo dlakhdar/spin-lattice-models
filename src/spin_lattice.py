@@ -57,7 +57,7 @@ def monte_carlo(lattice: "SpinLattice", iterations: (int)) -> list:
         else:
             p_return = np.exp(-lattice.β * ΔE)
             accept_reject = np.random.choice([-1.0, 1.0],
-                                             p=[p_return, 1 - p_return])
+                                            p=[p_return, 1 - p_return])
             lattice.spins[*index] = accept_reject * lattice.spins[*index]
         energies.append(E)
 
@@ -84,8 +84,8 @@ class SpinLattice:
         self.dimension = dimension
         self.d = dimension
         self.N = N
-        final_value = (spin_number + 0.5 if
-                       spin_number % 1 != 0 else spin_number + 1)
+        final_value = (spin_number + 0.5
+                       if spin_number % 1 != 0 else spin_number + 1)
         spin_values = np.arange(-spin_number, final_value) * scale_number
         self.spins = np.random.choice(spin_values, size=(self.N, self.N))
         self.h = magnetic_strength
@@ -102,6 +102,61 @@ class SpinLattice:
             self.spins == 1, up, np.where(self.spins == -1, down, self.spins)
         )
         return str(spin_string[1: self.N + 1, 1: self.N + 1])
+
+# TODO: add dimension
+class SpinGlass:
+    def __init__(
+        self,
+        N: (int | float),
+        dimension: (int) = 2,
+        temperature: (int | float) = 1,
+        boundary_condition: str = "buffered",
+        spin_number: (int | float) = 1 / 2,
+        scale_number: (int | float) = 2,
+        buffer_pad: (int | float) = 0,
+        interaction_strength: (int | float) = 1.0,
+        magnetic_strength: (int | float) = 1.0,
+        seed=1917,
+    ):
+
+
+        super(SpinLattice).__init__(N: (int | float),
+        dimension: (int) = 2,
+        temperature: (int | float) = 1,
+        boundary_condition: str = "buffered",
+        spin_number: (int | float) = 1 / 2,
+        scale_number: (int | float) = 2,
+        buffer_pad: (int | float) = 0,
+        magnetic_strength: (int | float) = 1.0,
+        seed=1917)
+
+        self.inverse_temperature = 1 / temperature
+        self.β = 1 / temperature
+        self.dimension = dimension
+        self.d = dimension
+        self.N = N
+        final_value = (spin_number + 0.5
+                       if spin_number % 1 != 0 else spin_number + 1)
+        spin_values = np.arange(-spin_number, final_value) * scale_number
+        self.spins = np.random.choice(spin_values, size=(self.N, self.N))
+        self.h = magnetic_strength
+        self.bc = boundary_condition
+        self.J = interaction_strength
+        self.interaction_strength = interaction_strength
+
+        if self.bc == "buffered":
+            # https://numpy.org/doc/stable/reference/generated/numpy.pad.html
+            self.spins = np.pad(self.spins, pad_width=1)
+
+
+
+
+    def __str__(self):
+        spin_string = np.where(
+            self.spins == 1, up, np.where(self.spins == -1, down, self.spins)
+        )
+        return str(spin_string[1: self.N + 1, 1: self.N + 1])
+
 
 
 if __name__ == "__main__":
